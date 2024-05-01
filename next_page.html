@@ -98,21 +98,23 @@
             z-index: 500;
         }
         .info-window {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 20px;
-            background-color: white;
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease-out;
-            transform: translateY(100%); /* Start hidden */
-            max-height: 25%; /* 1/4th of the screen height */
-            z-index: 1000;
-        }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease-out;
+    transform: translateY(100%); /* Start hidden */
+    max-height: 25%; /* Fixed height for scrolling */
+    overflow-y: auto; /* Enable vertical scrolling */
+    z-index: 1000;
+}
+
         .info-window.open {
             transform: translateY(0);
         }
@@ -185,29 +187,60 @@ function filterStores() {
     updateSearchResults(input); // Filter stores based on input
 }
 
-    var map = L.map('map').setView([15.154770890813833, 120.5974483422864], 15);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: 'Map data © OpenStreetMap contributors'
-    }).addTo(map);
+var map = L.map('map').setView([15.154770890813833, 120.5974483422864], 15);
+
+L.tileLayer('http://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}.png', {
+    attribution: 'Map data © Carto',
+    minZoom: 2,
+    maxZoom: 18 // Adjust zoom levels as needed
+}).addTo(map);
+
 
     var theoreticalLocation = [15.154924945618184, 120.59731329153556];
 
-    L.marker(theoreticalLocation, {
-        icon: L.divIcon({
-            className: 'custom-div-icon',
-            html: "<div style='width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 20px solid red;'></div>",
-            iconSize: [20, 20],
-            iconAnchor: [10, 20]
-        })
-    }).addTo(map);
+var customIcon = L.icon({
+    iconUrl: 'images/tloc.png', // Path to your custom icon
+    iconSize: [50, 50], // Adjust the size as needed
+    iconAnchor: [12, 12], // Center the anchor
+    popupAnchor: [0, -12], // Position popups correctly
+});
+
+L.marker(theoreticalLocation, { icon: customIcon }).addTo(map);
 
     var stores = [
-    { id: 1, lat: 15.15434472863961, lng: 120.59618407957196, name: "312 1st Street Store", description: "A general store at 312 1st Street.", image: "images/store1.jpg" },
-    { id: 2, lat: 15.15380917697232, lng: 120.59653363524617, name: "317 J Valdez Ave", description: "A store located at 317 J Valdez Ave.", image: "images/store2.jpg" },
-    { id: 3, lat: 15.153308588036433, lng: 120.59687568187331, name: "Mianroa Store", description: "A local store offering various goods.", image: "images/store3.jpg" },
-    { id: 4, lat: 15.15358099908826, lng: 120.59747531745523, name: "Cely's Carenderia and Indian Food", description: "Serving delicious Indian food.", image: "images/store4.jpg" },
-    // ... More stores ...
+    { id: 1, lat: 15.15434472863961, lng: 120.59618407957196, name: "312 1st Street Store", description: "A general store at 312 1st Street.", image: "images/312.png" },
+    { id: 2, lat: 15.15380917697232, lng: 120.59653363524617, name: "317 J Valdez Ave", description: "A store located at 317 J Valdez Ave.", image: "images/317.png" },
+    { id: 3, lat: 15.153308588036433, lng: 120.59687568187331, name: "Mianroa Store", description: "A local store offering various goods.", image: "images/mianroa.png" },
+    { id: 4, lat: 15.15358099908826, lng: 120.59747531745523, name: "Cely's Carenderia and Indian Food", description: "Serving delicious Indian food.", image: "images/cely.png" },
+    { id: 5, lat: 15.153266335172741, lng: 120.5954253587857, name: "Astoria Ave", description: "A local store at Astoria Ave.", image: "images/store5.jpg" },
+    { id: 6, lat: 15.15292724150735, lng: 120.59507195010993, name: "Jayson Store", description: "A store offering daily essentials.", image: "images/store6.jpg" },
+    { id: 7, lat: 15.153289645490368, lng: 120.59392628922426, name: "215 J Valdez Ave", description: "A store located at 215 J Valdez Ave.", image: "images/store7.jpg" },
+    { id: 8, lat: 15.15317052145745, lng: 120.5931457583235, name: "201 J Valdez Ave", description: "A store offering various goods.", image: "images/store8.jpg" },
+    { id: 9, lat: 15.153847100378083, lng: 120.59318822474698, name: "15 Riviera Bldg", description: "Located in the Riviera Building.", image: "images/store9.jpg" },
+    { id: 10, lat: 15.154333548273438, lng: 120.59319460415115, name: "118 Riviera Bldg", description: "A store in the Riviera Building.", image: "images/store10.jpg" },
+    { id: 11, lat: 15.154703001633083, lng: 120.59341150389261, name: "259-211 3rd Street", description: "A store at 259-211 3rd Street.", image: "images/259-211.png" },
+    { id: 12, lat: 15.154883742541132, lng: 120.59456490308553, name: "259-211 3rd Street", description: "A store at 259-211 3rd Street.", image: "images/259-211.png" },
+    { id: 13, lat: 15.154965288672946, lng: 120.59489608150132, name: "Darren Store", description: "A local store named Darren Store.", image: "images/darren.png" },
+    { id: 14, lat: 15.154296609464085, lng: 120.59516981060004, name: "217 Astoria Ave", description: "A store at 217 Astoria Ave.", image: "images/store14.jpg" },
+    { id: 15, lat: 15.152605002177033, lng: 120.59366226502908, name: "267-207 H Ventura Ave", description: "A store at 267-207 H Ventura Ave.", image: "images/store15.jpg" },
+    { id: 16, lat: 15.152870228962227, lng: 120.59269535107039, name: "Joric Sari-sari Store", description: "A local sari-sari store.", image: "images/store16.jpg" },
+    { id: 17, lat: 15.15295566440995, lng: 120.59278386396886, name: "Jam's Store", description: "A store offering various items.", image: "images/store17.jpg" },
+    { id: 18, lat: 15.153143683418415, lng: 120.59255987384455, name: "Minimart", description: "A mini-market offering essentials.", image: "images/store18.jpg" },
+    { id: 19, lat: 15.149939, lng: 120.598581, name: "ISING STORE", description: "A local store named ISING STORE.", image: "images/store19.jpg" },
+    { id: 20, lat: 15.150902, lng: 120.598180, name: "PAULA STORE", description: "A local store named PAULA STORE.", image: "images/store20.jpg" },
+    { id: 21, lat: 15.151208297514382, lng: 120.59823982613052, name: "UNKNOWN", description: "A store without a known name.", image: "images/store21.jpg" },
+    { id: 22, lat: 15.151628508915477, lng: 120.5979652663169, name: "ZENY STORE", description: "A store named ZENY STORE.", image: "images/store22.jpg" },
+    { id: 23, lat: 15.150949109049042, lng: 120.59737570864432, name: "UNKNOWN", description: "A store without a known name.", image: "images/store23.jpg" },
+    { id: 24, lat: 15.150453470471323, lng: 120.59610792595205, name: "UNKNOWN", description: "A store without a known name.", image: "images/store24.jpg" },
+    { id: 25, lat: 15.150177041359804, lng: 120.59607773748068, name: "UNKNOWN", description: "A store without a known name.", image: "images/store25.jpg" },
+    { id: 26, lat: 15.150375674890098, lng: 120.59672068306551, name: "PRINSESSS", description: "A store named PRINSESSS.", image: "images/store26.jpg" },
+    { id: 27, lat: 15.150398144788296, lng: 120.5954933374805, name: "APUNG NATTYS", description: "A store named APUNG NATTYS.", image: "images/store27.jpg" },
+    { id: 28, lat: 15.149975497326214, lng: 120.59536718166156, name: "UNKNOWN", description: "A store without a known name.", image: "images/store28.jpg" },
+    { id: 29, lat: 15.149696633042876, lng: 120.59415547086718, name: "CANLAPAN STORE", description: "A store named CANLAPAN STORE.", image: "images/store29.jpg" },
+    { id: 30, lat: 15.14992465598475, lng: 120.59351203103296, name: "PAKPAK FOOD HOUSE", description: "A local food house.", image: "images/store30.jpg" },
+    { id: 31, lat: 15.150946230622402, lng: 120.59338595341285, name: "MATTHEW STORE", description: "A store named MATTHEW STORE.", image: "images/store31.jpg" }
 ];
+
 
 
 
@@ -215,8 +248,16 @@ function filterStores() {
        disableClusteringAtZoom: 16, // Allows individual markers to show at zoom 16 and above
    });
 
+   var storeIcon = L.icon({
+    iconUrl: 'images/storepin.png', // Path to the custom store icon
+    iconSize: [25, 25], // Adjust the size as needed
+    iconAnchor: [12, 12], // Center the anchor
+    popupAnchor: [0, -12], // Position popups correctly
+});
+
+
    stores.forEach(function(store) {
-    var marker = L.marker([store.lat, store.lng]);
+    var marker = L.marker([store.lat, store.lng], { icon: storeIcon });
     var popupContent = `<b>${store.name}</b><br>${store.description}<br>
                         <img src="${store.image}" alt="${store.name} Image" style="width: 100%; height: auto;"><br>
                         <button onclick="showMoreInfo(${store.id})">More Information</button>
@@ -224,6 +265,10 @@ function filterStores() {
     marker.bindPopup(popupContent);
     markers.addLayer(marker); // Add the marker to the cluster group
 });
+
+map.addLayer(markers); // Ensure the cluster group is added to the map
+
+
 
    map.addLayer(markers); // Add the cluster group to the map
 
@@ -255,7 +300,7 @@ function filterStores() {
    }
 
    function showMoreInfo(storeId) {
-    var store = stores.find(s => s.id == storeId); // Find store by ID
+    var store = stores.find(s => s.id == storeId); // Retrieve store by ID
     var distance = getDistance(theoreticalLocation[0], theoreticalLocation[1], store.lat, store.lng);
     var infoWindow = document.getElementById('info-window');
     var infoContent = document.getElementById('info-content');
@@ -263,10 +308,11 @@ function filterStores() {
     infoContent.innerHTML = `<span>${store.description}</span>
                              <img src="${store.image}" alt="${store.name} Image" style="max-width: 100%; height: auto;">
                              <p>Distance: ${Math.round(distance * 1000)} meters</p>
-                             <p>Additional information about the store...</p>`;
+                             <p>This store provides a variety of goods and services to meet everyday needs. From groceries and household essentials to specialty items and local products, the store offers a comprehensive selection. The friendly staff are ready to assist, ensuring customers find what they need quickly and efficiently. Its convenient location makes it a go-to destination for shoppers, offering a seamless experience for both locals and visitors.</p>`;
 
     toggleInfoWindow(true); // Ensure the window expands and shows content
 }
+
 
 
 function toggleInfoWindow(open) {

@@ -146,16 +146,32 @@
 
 <div id="map"></div>
 
+<button id="cancel-directions-button" onclick="cancelDirections()" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);">Cancel Directions</button>
+
+
 <div class="info-window" id="info-window">
     <button class="toggle-button" onclick="toggleInfoWindow()">&#x25B2;</button>
     <div id="info-content">
         <span id="info-text">Default information text</span>
         <img src="images/placeholder.jpg" alt="Placeholder Image" style="max-width: 100%; height: auto;">
         <p>Additional information about the store...</p>
-    </div>
 </div>
 
 <script>
+    var currentPolyline = null; // Global definition
+
+    function cancelDirections() {
+    if (currentPolyline) {
+        map.removeLayer(currentPolyline);
+        toggleCancelDirectionsButton(false); // Hide button after canceling directions
+    }
+}
+
+function toggleCancelDirectionsButton(show) {
+    var button = document.getElementById('cancel-directions-button');
+    button.style.display = show ? 'block' : 'none'; // Show or hide button
+}
+
 function updateSearchResults(filter) {
     var resultsContainer = document.getElementById('search-results');
     resultsContainer.innerHTML = '';
@@ -284,20 +300,28 @@ map.addLayer(markers); // Ensure the cluster group is added to the map
 }
 
 
-   function getDirections(endLng, endLat) {
-       var start = theoreticalLocation;
-       var url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf624873b608f1a8de44e2846eceed55bef1e7&start=${start[1]},${start[0]}&end=${endLng},${endLat}`;
+function getDirections(endLng, endLat) {
+    if (currentPolyline) {
+        map.removeLayer(currentPolyline); // Remove existing polyline
+        toggleCancelDirectionsButton(false); // Hide cancel button when removing directions
+    }
 
-       fetch(url).then(response => response.json()).then(data => {
-           var coords = data.features[0].geometry.coordinates;
-           var latlngs = coords.map(coord => [coord[1], coord[0]]);
-           var polyline = L.polyline(latlngs, { color: 'blue' }).addTo(map);
-           map.fitBounds(polyline.getBounds());
-       }).catch(error => {
-           console.error('Error fetching directions:', error);
-           alert('Failed to retrieve directions.');
-       });
-   }
+    var start = theoreticalLocation;
+    var url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf624873b608f1a8de44e2846eceed55bef1e7&start=${start[1]},${start[0]}&end=${endLng},${endLat}`;
+
+    fetch(url).then(response => response.json()).then(data => {
+        var coords = data.features[0].geometry.coordinates;
+        var latlngs = coords.map(coord => [coord[1], coord[0]]);
+        currentPolyline = L.polyline(latlngs, { color: 'blue' }).addTo(map);
+        map.fitBounds(currentPolyline.getBounds());
+
+        toggleCancelDirectionsButton(true); // Show cancel button after drawing new directions
+    }).catch(error => {
+        console.error('Error fetching directions:', error);
+        alert('Failed to retrieve directions.');
+    });
+}
+
 
    function showMoreInfo(storeId) {
     var store = stores.find(s => s.id == storeId); // Retrieve store by ID

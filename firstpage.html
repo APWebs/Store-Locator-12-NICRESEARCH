@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Store Locator App</title>
+<style>
+  body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+  }
+  .container {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f4f4f4;
+    padding: 10px;
+  }
+  .card {
+    width: 90%;
+    max-width: 400px;
+    padding: 40px;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+    text-align: center;
+    background-color: white;
+    border-radius: 10px;
+  }
+  .card h2 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  .card p {
+    font-size: 18px;
+    color: #555;
+    margin-bottom: 30px;
+  }
+  .button {
+    background-color: #ffcc00; /* Yellow background */
+    border: none;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    font-size: 18px;
+    margin: 10px 0;
+    cursor: pointer;
+    border-radius: 5px;
+    width: 100%;
+  }
+  .button:hover {
+    background-color: #e6b800;
+  }
+  .logo-image {
+    height: 200pt;
+    width: 200pt;
+    margin: 0 auto 30px;
+  }
+</style>
+<script>
+  function redirectTo(url) {
+    window.location.href = url;
+  }
+</script>
+</head>
+<body>
+
+<div class="container">
+  <div class="card">
+    <img src="images/mainlogo.png" alt="Main Logo" class="logo-image">
+    <h2>FIND A STORE</h2>
+    <p>Locate your nearest store quickly and easily.</p>
+    <button class="button" onclick="redirectTo('login.html')">SIGN IN</button>
+    <button class="button" onclick="redirectTo('signup.html')" style="background-color: #333;">SIGN UP</button>
+    <button class="button" onclick="redirectTo('#howItWorks')">HOW IT WORKS</button>
+  </div>
+</div>
+
+</body>
+</html>

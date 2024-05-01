@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device_width, initial-scale=1.0">
+    <title>Interactive Map with Store Information</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden; /* Prevent scrolling */
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px; /* Increased height */
+            background-color: #f0f0f0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            z-index: 1002;
+        }
+        .header-icon {
+            font-size: 36px; /* Increased icon size */
+            cursor: pointer;
+        }
+        .center-logo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+        .center-logo img {
+            height: 50px; /* Adjust logo size as needed */
+        }
+        .search-bar {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 80px; /* Ensure it appears below the top bar */
+    left: 0;
+    width: 100%;
+    height: 80px;
+    background-color: #f0f0f0;
+    padding: 10px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 1001; /* Ensure it stays visible */
+}
+
+.search-input {
+    width: 80%;
+    height: 50px;
+    padding: 10px;
+    font-size: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#search-results {
+    list-style: none;
+    width: 80%;
+    margin: 5px auto;
+    padding: 0;
+    display: none; /* Initially hidden */
+}
+
+#search-results li {
+    padding: 5px;
+    cursor: pointer;
+    background-color: #f9f9f9;
+    text-align: left;
+}
+
+#search-results li:hover {
+    background-color: #ddd;
+}
+
+        #map {
+            position: absolute;
+            top: 160px; /* Below the search bar */
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 500;
+        }
+        .info-window {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease-out;
+            transform: translateY(100%); /* Start hidden */
+            max-height: 25%; /* 1/4th of the screen height */
+            z-index: 1000;
+        }
+        .info-window.open {
+            transform: translateY(0);
+        }
+        .toggle-button {
+            padding: 5px;
+            background-color: transparent;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <i class="material-icons header-icon" onclick="openSettings()">settings</i>
+        <div class="center-logo">
+            <img src="images/mainlogo.png" alt="Logo">
+        </div>
+        <i class="material-icons header-icon" onclick="openProfile()">account_circle</i>
+    </div>
+
+    <div class="search-bar">
+        <input type="text" id="search-input" class="search-input" placeholder="Search stores..." onfocus="initialDisplay()" oninput="filterStores()">
+        <ul id="search-results" class="search-results"></ul>
+    </div>
+    
+
+<div id="map"></div>
+
+<div class="info-window" id="info-window">
+    <button class="toggle-button" onclick="toggleInfoWindow()">&#x25B2;</button>
+    <div id="info-content">
+        <span id="info-text">Default information text</span>
+        <img src="images/placeholder.jpg" alt="Placeholder Image" style="max-width: 100%; height: auto;">
+        <p>Additional information about the store...</p>
+    </div>
+</div>
+
+<script>
+function updateSearchResults(filter) {
+    var resultsContainer = document.getElementById('search-results');
+    resultsContainer.innerHTML = '';
+    resultsContainer.style.display = 'block';
+
+    var filteredStores = stores.filter(store => store.name.toLowerCase().includes(filter));
+    filteredStores.sort((a, b) => {
+        return getDistance(theoreticalLocation[0], theoreticalLocation[1], a.lat, a.lng) - getDistance(theoreticalLocation[0], theoreticalLocation[1], b.lat, b.lng);
+    });
+
+    filteredStores.slice(0, 3).forEach(store => {
+        var li = document.createElement('li');
+        li.textContent = store.name + " - " + Math.round(getDistance(theoreticalLocation[0], theoreticalLocation[1], store.lat, store.lng) * 1000) + "m";
+        li.onclick = function() {
+            map.setView([store.lat, store.lng], 17);
+            showMoreInfo(store.description);
+        };
+        resultsContainer.appendChild(li);
+    });
+}
+
+
+    function initialDisplay() {
+    updateSearchResults(""); // Display nearest stores by default
+}
+
+function filterStores() {
+    var input = document.getElementById('search-input').value.toLowerCase();
+    updateSearchResults(input); // Filter stores based on input
+}
+
+    var map = L.map('map').setView([15.154770890813833, 120.5974483422864], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data © OpenStreetMap contributors'
+    }).addTo(map);
+
+    var theoreticalLocation = [15.154924945618184, 120.59731329153556];
+
+    L.marker(theoreticalLocation, {
+        icon: L.divIcon({
+            className: 'custom-div-icon',
+            html: "<div style='width: 0; height: 0; border-left: 10px solid transparent; border-right: 10px solid transparent; border-bottom: 20px solid red;'></div>",
+            iconSize: [20, 20],
+            iconAnchor: [10, 20]
+        })
+    }).addTo(map);
+
+    var stores = [
+    { id: 1, lat: 15.15434472863961, lng: 120.59618407957196, name: "312 1st Street Store", description: "A general store at 312 1st Street.", image: "images/store1.jpg" },
+    { id: 2, lat: 15.15380917697232, lng: 120.59653363524617, name: "317 J Valdez Ave", description: "A store located at 317 J Valdez Ave.", image: "images/store2.jpg" },
+    { id: 3, lat: 15.153308588036433, lng: 120.59687568187331, name: "Mianroa Store", description: "A local store offering various goods.", image: "images/store3.jpg" },
+    { id: 4, lat: 15.15358099908826, lng: 120.59747531745523, name: "Cely's Carenderia and Indian Food", description: "Serving delicious Indian food.", image: "images/store4.jpg" },
+    // ... More stores ...
+];
+
+
+
+   var markers = L.markerClusterGroup({
+       disableClusteringAtZoom: 16, // Allows individual markers to show at zoom 16 and above
+   });
+
+   stores.forEach(function(store) {
+    var marker = L.marker([store.lat, store.lng]);
+    var popupContent = `<b>${store.name}</b><br>${store.description}<br>
+                        <img src="${store.image}" alt="${store.name} Image" style="width: 100%; height: auto;"><br>
+                        <button onclick="showMoreInfo(${store.id})">More Information</button>
+                        <button onclick="getDirections(${store.lng}, ${store.lat})">Get Directions</button>`;
+    marker.bindPopup(popupContent);
+    markers.addLayer(marker); // Add the marker to the cluster group
+});
+
+   map.addLayer(markers); // Add the cluster group to the map
+
+   function getDistance(lat1, lon1, lat2, lon2) {
+    var R = 6371; // Radius of the Earth in kilometers
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLon = (lon2 - lon1) * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+
+   function getDirections(endLng, endLat) {
+       var start = theoreticalLocation;
+       var url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf624873b608f1a8de44e2846eceed55bef1e7&start=${start[1]},${start[0]}&end=${endLng},${endLat}`;
+
+       fetch(url).then(response => response.json()).then(data => {
+           var coords = data.features[0].geometry.coordinates;
+           var latlngs = coords.map(coord => [coord[1], coord[0]]);
+           var polyline = L.polyline(latlngs, { color: 'blue' }).addTo(map);
+           map.fitBounds(polyline.getBounds());
+       }).catch(error => {
+           console.error('Error fetching directions:', error);
+           alert('Failed to retrieve directions.');
+       });
+   }
+
+   function showMoreInfo(storeId) {
+    var store = stores.find(s => s.id == storeId); // Find store by ID
+    var distance = getDistance(theoreticalLocation[0], theoreticalLocation[1], store.lat, store.lng);
+    var infoWindow = document.getElementById('info-window');
+    var infoContent = document.getElementById('info-content');
+
+    infoContent.innerHTML = `<span>${store.description}</span>
+                             <img src="${store.image}" alt="${store.name} Image" style="max-width: 100%; height: auto;">
+                             <p>Distance: ${Math.round(distance * 1000)} meters</p>
+                             <p>Additional information about the store...</p>`;
+
+    toggleInfoWindow(true); // Ensure the window expands and shows content
+}
+
+
+function toggleInfoWindow(open) {
+    var infoWindow = document.getElementById('info-window');
+    var toggleButton = document.querySelector('.toggle-button');
+
+    if (open) {
+        infoWindow.style.transform = 'translateY(0)';
+        toggleButton.innerHTML = '&#x25BC;'; // Down arrow when open
+    } else {
+        infoWindow.style.transform = 'translateY(100%)';
+        toggleButton.innerHTML = '&#x25B2;'; // Up arrow when closed
+    }
+}
+
+   function openProfile() {
+       alert("Profile functionality not implemented.");
+   }
+
+   function openSettings() {
+       alert("Settings functionality not implemented.");
+   }
+</script>
+
+</body>
+</html>

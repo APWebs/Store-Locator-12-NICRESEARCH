@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Logo Page</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+    }
+
+    .logo-container {
+        text-align: center;
+        width: 80%; /* Adjust as needed */
+        max-width: 600px; /* Adjust as needed */
+    }
+
+    .logo {
+        width: 2000px; /* Double the width */
+        height: auto;
+        max-width: 100%; /* Ensure the image doesn't exceed its original size */
+    }
+
+    .start-button {
+        width: 100%; /* Adjust as needed */
+        padding: 40px 80px; /* Double the padding */
+        font-size: 36px; /* Double the font size */
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 20px; /* Double the border radius */
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .start-button:hover {
+        background-color: #0056b3;
+    }
+</style>
+</head>
+<body>
+    <div class="logo-container">
+        <!-- Logo image -->
+        <img class="logo" src="images/mainlogo.png" alt="Logo">
+        <br>
+        <!-- Start button -->
+        <button class="start-button" onclick="window.location.href='next_page.html'">Start</button>
+    </div>
+</body>
+</html>
